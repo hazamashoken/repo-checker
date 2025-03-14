@@ -6,6 +6,7 @@ import requests
 from flask import Flask, request, jsonify
 from git import Repo
 from paramiko import Ed25519Key
+from paramiko import RSAKey
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -22,8 +23,12 @@ if X_SECRET is None:
 
 def load_ssh_key(private_key_path):
     try:
-        key = Ed25519Key(filename=private_key_path)
-        return key
+        if "rsa" in private_key_path:
+            key = RSAKey(filename=private_key_path)
+            return key
+        elif "ed25519" in private_key_path:
+            key = Ed25519Key(filename=private_key_path)
+            return key
     except Exception as e:
         logging.error(f"Failed to load SSH key: {e}")
         return None
