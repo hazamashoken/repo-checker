@@ -1,0 +1,13 @@
+[project]
+name = "repo-checker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.0",
+    "gitpython>=3.1.44",
+    "gunicorn>=23.0.0",
+    "paramiko>=3.5.1",
+    "requests>=2.32.3",
+]
