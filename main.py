@@ -15,6 +15,10 @@ ALLOWED_EXTENSIONS = {".c", ".cpp", ".h", ".hpp", "Makefile"}
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", None)
 
 SSH_KEY_PATH= os.environ.get("SSH_KEY_PATH", "~/.ssh/id_ed25519")
+X_SECRET = os.environ.get("X_SECRET")
+
+if X_SECRET is None:
+    raise Exception("X_SECRET is required")
 
 def load_ssh_key(private_key_path):
     try:
@@ -79,6 +83,9 @@ def send_discord_notification(invalid_files, users, project):
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
+    secret = request.headers.get("X-Secret")
+    if secret != X_SECRET:
+        return jsonify({"error": "Bad Request"}), 401
     data = request.get_json()
     repo_url = data.get("repo_url")
     if not repo_url:
@@ -97,7 +104,7 @@ def webhook():
 
     if invalid_files:
         send_discord_notification(invalid_files, users, project)
-        return jsonify({"message": "Repository processed successfully, but some files don't match the allowed extensions.", "invalid_files": invalid_files}), 200
+        return jsonify({"message": "Repository processed successfully, but some files don't match the allowed extensions."}), 200
 
     return jsonify({"message": "Repository processed successfully, all files match the allowed extensions."}), 200
 
