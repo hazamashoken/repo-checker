@@ -6,13 +6,15 @@ import requests
 from flask import Flask, request, jsonify
 from git import Repo
 from paramiko import Ed25519Key
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = {".c", ".cpp", ".h", ".hpp", "Makefile"}
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", None)
 
-SSH_KEY_PATH= os.environ.get("SSH_KEY_PATH", None)
+SSH_KEY_PATH= os.environ.get("SSH_KEY_PATH", "~/.ssh/id_ed25519")
 
 def load_ssh_key(private_key_path):
     try:
@@ -22,6 +24,10 @@ def load_ssh_key(private_key_path):
         logging.error(f"Failed to load SSH key: {e}")
         return None
 
+ssh_key_path = os.path.expanduser(SSH_KEY_PATH)
+ssh_key = load_ssh_key(ssh_key_path)
+if not ssh_key:
+    raise Exception("Failed to load SSH key")
 
 def clone_repo(repo_url, clone_dir, ssh_key):
     if os.path.exists(clone_dir):
@@ -51,11 +57,12 @@ def is_valid_extension(filename):
 
 
 def send_discord_notification(invalid_files, users, project):
-    message = f"Invalid files detected: {', '.join(invalid_files)}"
+    message = '\n'.join(invalid_files)
     payload = {"embeds": [
     {
-      "title": f"{users[0]} - {project['slug']}",
+      "title": f"{users[0].get("login", "login")} - {project['slug']}",
       "description": message,
+      "url": f"https://projects.intra.42.fr/projects/{project['slug']}/projects_users/{users[0].get("projects_user_id", "projects_user_id")}",
       "color": 5814783
     }
     ],}
@@ -80,10 +87,7 @@ def webhook():
     project = data.get("project")
 
     clone_dir = "./temp-repo"
-    ssh_key_path = os.path.expanduser(SSH_KEY_PATH)
-    ssh_key = load_ssh_key(ssh_key_path)
-    if not ssh_key:
-        return jsonify({"error": "Failed to load SSH key"}), 500
+
 
     if not clone_repo(repo_url, clone_dir, ssh_key_path):
         return jsonify({"error": "Failed to clone repo"}), 500
