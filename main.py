@@ -71,7 +71,7 @@ def send_discord_notification(invalid_files, users, project):
     {
       "title": f"{users[0].get("login", "login")} - {project['slug']}",
       "description": message,
-      "url": f"https://projects.intra.42.fr/projects/{project['slug']}/projects_users/{users[0].get("projects_user_id", "projects_user_id")}",
+      "url": f"https://projects.intra.42.fr/{project['slug']}/{users[0].get("login", "login")}",
       "color": 5814783
     }
     ],}
@@ -91,7 +91,7 @@ def send_discord_success(users, project):
     {
       "title": f"{users[0].get("login", "login")} - {project['slug']}",
       "description": "All files match the allowed extensions.",
-      "url": f"https://projects.intra.42.fr/projects/{project['slug']}/projects_users/{users[0].get("projects_user_id", "projects_user_id")}",
+      "url": f"https://projects.intra.42.fr/{project['slug']}/{users[0].get("login", "login")}",
       "color": 5814783
     }
     ], }
