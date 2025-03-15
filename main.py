@@ -85,6 +85,25 @@ def send_discord_notification(invalid_files, users, project):
     except Exception as e:
         logging.error(f"Error sending Discord webhook: {e}")
 
+def send_discord_success(users, project):
+    payload = {
+        "embeds": [
+    {
+      "title": f"{users[0].get("login", "login")} - {project['slug']}",
+      "description": "All files match the allowed extensions.",
+      "url": f"https://projects.intra.42.fr/projects/{project['slug']}/projects_users/{users[0].get("projects_user_id", "projects_user_id")}",
+      "color": 5814783
+    }
+    ], }
+    headers = {"Content-Type": "application/json"}
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(payload), headers=headers)
+        if response.status_code == 204:
+            logging.info("Discord notification sent successfully")
+        else:
+            logging.error(f"Failed to send Discord notification: {response.text}")
+    except Exception as e:
+        logging.error(f"Error sending Discord webhook: {e}")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -111,6 +130,7 @@ def webhook():
         send_discord_notification(invalid_files, users, project)
         return jsonify({"message": "Repository processed successfully, but some files don't match the allowed extensions."}), 200
 
+    send_discord_success(users, project)
     return jsonify({"message": "Repository processed successfully, all files match the allowed extensions."}), 200
 
 
