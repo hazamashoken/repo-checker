@@ -119,6 +119,9 @@ def webhook():
 
     clone_dir = "./temp-repo"
 
+    if "c-piscine" in project["slug"]:
+        return jsonify({"success": "Skipping Piscine project"}), 200
+
 
     if not clone_repo(repo_url, clone_dir, ssh_key_path):
         return jsonify({"error": "Failed to clone repo"}), 500
